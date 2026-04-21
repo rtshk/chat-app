@@ -58,40 +58,40 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary">
-            <MessageCircle className="h-7 w-7 text-primary-foreground" />
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-900 via-slate-900 to-black p-4">
+      <Card className="w-full max-w-md border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
+        <CardHeader className="space-y-4 pb-8 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20 transform hover:scale-105 transition-transform duration-300">
+            <MessageCircle className="h-8 w-8 text-white" />
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to continue to Chat App</CardDescription>
+          <div className="space-y-2">
+            <CardTitle className="text-3xl font-bold tracking-tight text-white">Welcome back</CardTitle>
+            <CardDescription className="text-slate-400">Sign in to continue your conversations</CardDescription>
           </div>
         </CardHeader>
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             {error && (
-              <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive-foreground">
                 {error}
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-slate-200">Email Address</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={errors.email ? "border-destructive" : ""}
+                className={`bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 transition-colors ${errors.email ? "border-destructive" : ""}`}
               />
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
+                <p className="text-xs font-medium text-destructive">{errors.email}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" title="password" className="text-slate-200">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -99,28 +99,32 @@ export default function SignInPage() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={errors.password ? "border-destructive pr-10" : "pr-10"}
+                  className={`bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-indigo-500 transition-colors ${errors.password ? "border-destructive pr-10" : "pr-10"}`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
+                <p className="text-xs font-medium text-destructive">{errors.password}</p>
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
+          <CardFooter className="flex flex-col gap-6 pt-6">
+            <Button 
+              type="submit" 
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold h-11 transition-all shadow-lg shadow-indigo-600/20 active:scale-[0.98]" 
+              disabled={isLoading}
+            >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-slate-400">
               {"Don't have an account? "}
-              <Link href="/register" className="font-medium text-primary hover:underline">
+              <Link href="/register" className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors underline-offset-4 hover:underline">
                 Register
               </Link>
             </p>
