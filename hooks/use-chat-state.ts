@@ -185,12 +185,25 @@ export function useChatState(userId: string | undefined) {
     if (!userId) return
     const channel = supabase.channel(`sync:${userId.slice(0, 8)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
+        console.log('Realtime message update received:', payload)
         const msg = payload.new as any
         if (selectedIdRef.current && msg.conversation_id === selectedIdRef.current) fetchMessages(selectedIdRef.current)
         fetchConversations()
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversations' }, () => fetchConversations())
-      .subscribe()
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversations' }, () => {
+        console.log('Realtime conversation update received')
+        fetchConversations()
+      })
+      .subscribe((status, err) => {
+        console.log('Realtime subscription status:', status)
+        if (err) console.error('Realtime error:', err)
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates for user:', userId)
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Realtime subscription failed. 1. Check if Realtime is enabled in Supabase Dashboard (Project Settings -> API). 2. Check if tables are added to the supabase_realtime publication in Database -> Replication.')
+        }
+      })
     return () => { supabase.removeChannel(channel) }
   }, [userId, fetchMessages, fetchConversations])
 
