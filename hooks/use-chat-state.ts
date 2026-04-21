@@ -141,7 +141,7 @@ export function useChatState(userId: string | undefined) {
         id: msg.id, 
         content: msg.content, 
         senderId: msg.sender_id, 
-        senderName: msg.sender?.full_name || "AI Assistant",
+        senderName: msg.sender?.full_name || "Unknown",
         timestamp: msg.created_at, 
         attachmentUrl: msg.attachment_url, 
         attachmentType: msg.attachment_type, 
@@ -244,13 +244,6 @@ export function useChatState(userId: string | undefined) {
       [selectedId]: (prev[selectedId] || []).map(m => m.id === tempId ? { ...m, id: savedMsg.id, timestamp: savedMsg.created_at, status: savedMsg.status } : m)
     }))
 
-    if (selectedConversation?.id === 'ai-assistant' || selectedConversation?.name === 'AI Assistant') {
-      const history = messages[selectedId] || []
-      fetch('/api/chat/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: history.slice(-10), prompt: content }) })
-        .then(res => res.json()).then(data => {
-          if (data.text) supabase.from('messages').insert({ content: data.text, conversation_id: selectedId, sender_id: null }).then(() => fetchMessages(selectedId))
-        })
-    }
     await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', selectedId)
   }, [userId, currentUser, selectedId, selectedConversation, messages, replyingTo, fetchMessages])
 

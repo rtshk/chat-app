@@ -14,7 +14,6 @@ Follow these steps to deploy your application to a production environment (Verce
 In Vercel (or your hosting provider), add the following environment variables:
 - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase Project URL.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase Anon Public Key.
-- `GEMINI_API_KEY`: Your Google AI Studio API key (for the AI Assistant).
 
 ## 3. Vercel Deployment 🚀
 - [ ] **Import Project**: Link your GitHub repository to Vercel.
@@ -25,7 +24,6 @@ In Vercel (or your hosting provider), add the following environment variables:
 - [ ] **Authentication**: Verify that you can sign up and sign in.
 - [ ] **Real-time**: Open two different browsers and check if messages appear instantly.
 - [ ] **Media**: Send an image and a voice message to verify storage integration.
-- [ ] **AI Assistant**: Send a message to the AI Assistant and verify the response.
 
 ## 5. Security & Scaling 🛡️
 - [ ] **RLS Policies**: Double-check that Row Level Security is enabled for all tables in Supabase.
