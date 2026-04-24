@@ -57,7 +57,16 @@ export function useChatState(user: { id: string; name: string; avatar?: string }
     if (!userId) return
     const { data, error } = await supabase
       .from('conversations')
-      .select(`*, members:conversation_members(user_id, last_cleared_at, profiles(full_name, avatar_url, email, phone, about))`)
+      .select(`
+        *,
+        membership:conversation_members!inner(user_id),
+        members:conversation_members(
+          user_id, 
+          last_cleared_at, 
+          profiles(full_name, avatar_url, email, phone, about)
+        )
+      `)
+      .eq('conversation_members.user_id', userId)
       .order('updated_at', { ascending: false })
 
     if (error || !data) return
@@ -97,7 +106,7 @@ export function useChatState(user: { id: string; name: string; avatar?: string }
         .eq('conversation_id', conv.id).eq('is_read', false).neq('sender_id', userId)
 
       return {
-        id: conv.id, name, avatar, email, phone, about, isGroup, online: false, unread: count || 0,
+        id: conv.id, name: name || "Unknown Conversation", avatar, email, phone, about, isGroup, online: false, unread: count || 0,
         lastMessage: lastMsg ? (lastMsg.content || "Attachment") : "No messages yet",
         time: lastMsg ? new Date(lastMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "",
         lastMessageAt: lastMsg?.created_at,
@@ -112,6 +121,11 @@ export function useChatState(user: { id: string; name: string; avatar?: string }
     if (!userId) return
     const { data: memberData } = await supabase.from('conversation_members').select('last_cleared_at')
       .eq('conversation_id', convId).eq('user_id', userId).maybeSingle()
+
+    if (!memberData) {
+      console.warn('Security: Attempted to fetch messages for a conversation where user is not a member.')
+      return
+    }
 
     const lastClearedAt = memberData?.last_cleared_at
     const { data, error } = await supabase.from('messages').select(`*, sender:profiles(full_name, avatar_url), reply_to:messages!reply_to_id(id, content, sender_id, attachment_type, sender:profiles(full_name))`)

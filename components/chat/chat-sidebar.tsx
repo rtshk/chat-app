@@ -38,7 +38,7 @@ export function ChatSidebar({
   setNavView
 }: ChatSidebarProps) {
   const filteredConversations = conversations.filter(conversation =>
-    conversation.name.toLowerCase().includes(searchQuery.toLowerCase())
+    (conversation.name || "Unknown").toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
