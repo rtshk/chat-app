@@ -10,7 +10,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined)
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const userProfile = useUserProfile()
-  const chatState = useChatState(userProfile.currentUser?.id)
+  const chatState = useChatState(userProfile.currentUser)
 
   const value = {
     ...chatState,

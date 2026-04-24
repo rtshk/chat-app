@@ -43,10 +43,29 @@ export function useUserProfile() {
   }, [])
 
   const handleUpdateUser = async (user: UserProfile) => {
-    setCurrentUser(user)
-    // In a real app, you would also update the Supabase profile/metadata here
     const { createClient } = await import("@/lib/supabase/client")
     const supabase = createClient()
+
+    // 1. Update UI state immediately
+    setCurrentUser(user)
+
+    // 2. Update Supabase Profiles table (Primary source for chat display)
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        full_name: user.name,
+        avatar_url: user.avatar,
+        about: user.about,
+        phone: user.phone,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id)
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError)
+    }
+
+    // 3. Update Supabase Auth metadata
     await supabase.auth.updateUser({
       data: {
         full_name: user.name,

@@ -21,10 +21,8 @@ In Vercel (or your hosting provider), add the following environment variables:
 - [ ] **Framework Preset**: Select "Next.js".
 
 ## 4. Final Verification ✅
-- [ ] **Supabase Realtime**: Go to **Project Settings -> API** and ensure **"Enable Realtime"** is toggled **ON**.
-- [ ] **Database Replication**: Go to **Database -> Replication**, edit the `supabase_realtime` publication, and check `messages`, `conversations`, and `profiles`.
 - [ ] **Authentication**: Verify that you can sign up and sign in.
-- [ ] **Real-time Sync**: Open two different browsers and check if messages appear instantly.
+- [ ] **Real-time**: Open two different browsers and check if messages appear instantly.
 - [ ] **Media**: Send an image and a voice message to verify storage integration.
 
 ## 5. Security & Scaling 🛡️

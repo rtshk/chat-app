@@ -20,44 +20,51 @@ export function VoiceRecorder({ onSend, onCancel }: VoiceRecorderProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
+    let isMounted = true
+    let interval: NodeJS.Timeout
+
+    const startRecording = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        if (!isMounted) {
+          stream.getTracks().forEach(track => track.stop())
+          return
+        }
+
+        const mediaRecorder = new MediaRecorder(stream)
+        mediaRecorderRef.current = mediaRecorder
+        chunksRef.current = []
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunksRef.current.push(e.data)
+          }
+        }
+
+        mediaRecorder.start()
+        setIsRecording(true)
+        
+        interval = setInterval(() => {
+          setRecordingTime(prev => prev + 1)
+        }, 1000)
+        timerRef.current = interval
+      } catch (err) {
+        console.error("Error accessing microphone:", err)
+        if (isMounted) onCancel()
+      }
+    }
+
     startRecording()
+
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
+      isMounted = false
+      if (interval) clearInterval(interval)
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop()
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
       }
     }
   }, [])
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mediaRecorder = new MediaRecorder(stream)
-      mediaRecorderRef.current = mediaRecorder
-      chunksRef.current = []
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data)
-        }
-      }
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' })
-        // We'll handle sending in the stop handler if requested
-      }
-
-      mediaRecorder.start()
-      setIsRecording(true)
-      
-      timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1)
-      }, 1000)
-    } catch (err) {
-      console.error("Error accessing microphone:", err)
-      onCancel()
-    }
-  }
 
   const stopAndSend = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {

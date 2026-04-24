@@ -13,7 +13,8 @@ import { createClient } from "@/lib/supabase/client"
 
 const supabase = createClient()
 
-export function useChatState(userId: string | undefined) {
+export function useChatState(user: { id: string; name: string; avatar?: string } | null) {
+  const userId = user?.id
   const router = useRouter()
   
   // --- State Declarations ---
@@ -52,18 +53,6 @@ export function useChatState(userId: string | undefined) {
   }, [conversations, selectedId, searchQuery, navView, fuse])
 
   // --- Data Fetching ---
-  const fetchCurrentUser = useCallback(async () => {
-    if (!userId) return
-    const { data } = await supabase.from('profiles').select('id, full_name, avatar_url').eq('id', userId).single()
-    if (data) {
-      setCurrentUser({
-        id: data.id,
-        name: data.full_name || "You",
-        avatar: data.avatar_url || undefined
-      })
-    }
-  }, [userId])
-
   const fetchConversations = useCallback(async () => {
     if (!userId) return
     const { data, error } = await supabase
@@ -134,7 +123,6 @@ export function useChatState(userId: string | undefined) {
       const isBeforeClearance = lastClearedAt && new Date(msg.created_at) <= new Date(lastClearedAt)
       return !isDeleted && !isBeforeClearance
     }).map((msg: any) => {
-      // Manual lookup for the replied message in the current batch
       const originalMsg = msg.reply_to_id ? data.find((m: any) => m.id === msg.reply_to_id) : null;
       
       return {
@@ -171,8 +159,8 @@ export function useChatState(userId: string | undefined) {
 
   // --- Effects ---
   useEffect(() => { 
-    fetchCurrentUser(); fetchConversations(); fetchAllUsers(); 
-  }, [userId, fetchCurrentUser, fetchConversations, fetchAllUsers])
+    fetchConversations(); fetchAllUsers(); 
+  }, [userId, fetchConversations, fetchAllUsers])
 
   useEffect(() => { 
     if (selectedId) fetchMessages(selectedId) 
@@ -185,25 +173,14 @@ export function useChatState(userId: string | undefined) {
     if (!userId) return
     const channel = supabase.channel(`sync:${userId.slice(0, 8)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
-        console.log('Realtime message update received:', payload)
         const msg = payload.new as any
         if (selectedIdRef.current && msg.conversation_id === selectedIdRef.current) fetchMessages(selectedIdRef.current)
         fetchConversations()
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversations' }, () => {
-        console.log('Realtime conversation update received')
         fetchConversations()
       })
-      .subscribe((status, err) => {
-        console.log('Realtime subscription status:', status)
-        if (err) console.error('Realtime error:', err)
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to real-time updates for user:', userId)
-        }
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Realtime subscription failed. 1. Check if Realtime is enabled in Supabase Dashboard (Project Settings -> API). 2. Check if tables are added to the supabase_realtime publication in Database -> Replication.')
-        }
-      })
+      .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [userId, fetchMessages, fetchConversations])
 
@@ -231,7 +208,7 @@ export function useChatState(userId: string | undefined) {
     if (!userId || !selectedId) return
     const tempId = `temp-${Date.now()}`
     const newMessage: Message = {
-      id: tempId, content, senderId: userId, senderName: currentUser?.name || "You",
+      id: tempId, content, senderId: userId, senderName: user?.name || "You",
       timestamp: new Date().toISOString(), status: 'sent', attachmentUrl: attachment?.url, attachmentType: attachment?.type,
       replyTo: replyingTo ? { 
         id: replyingTo.message.id, 
@@ -258,7 +235,7 @@ export function useChatState(userId: string | undefined) {
     }))
 
     await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', selectedId)
-  }, [userId, currentUser, selectedId, selectedConversation, messages, replyingTo, fetchMessages])
+  }, [userId, user, selectedId, replyingTo])
 
   const handleReply = useCallback((message: Message) => {
     let name = message.senderId === userId ? "You" : (selectedConversation?.isGroup ? message.senderName : selectedConversation?.name) || "Unknown"
@@ -308,12 +285,6 @@ export function useChatState(userId: string | undefined) {
     await supabase.auth.signOut(); router.push("/sign-in")
   }, [router])
 
-  const handleUpdateUser = useCallback(async (updates: any) => {
-    if (!userId) return
-    const { error } = await supabase.from('profiles').update(updates).eq('id', userId)
-    if (!error) fetchCurrentUser()
-  }, [userId, fetchCurrentUser])
-
   const handleBack = useCallback(() => { setShowMobileChat(false); setReplyingTo(null) }, [])
 
   // --- Profiles (Derived) ---
@@ -329,8 +300,6 @@ export function useChatState(userId: string | undefined) {
   } : null, [selectedConversation])
 
   return {
-    currentUser, isLoading: false, showUserProfile, setShowUserProfile, handleUpdateUser,
-    theme, handleThemeChange: (t: 'light' | 'dark') => { setTheme(t); document.documentElement.classList.toggle('dark', t === 'dark') },
     selectedId, conversations, allUsers, filteredConversations, messages, showMobileChat, searchQuery, setSearchQuery,
     navView, setNavView, showNewChatModal, setShowNewChatModal, showContactProfile, setShowContactProfile,
     showGroupProfile, setShowGroupProfile, replyingTo, setReplyingTo, selectedConversation, contactProfile, groupProfile,
