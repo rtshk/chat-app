@@ -88,6 +88,15 @@ export function MessageList({
                     : "bg-card text-card-foreground rounded-tl-none border border-border"
                 )}
               >
+                {/* Sender Name */}
+                {isFirstInGroup && (
+                  <p className={cn(
+                    "text-[11px] font-bold mb-0.5",
+                    isOwn ? "text-primary-foreground/90 text-right" : "text-primary text-left"
+                  )}>
+                    {isOwn ? "You" : message.senderName || "Unknown"}
+                  </p>
+                )}
                 {/* Reply Context (WhatsApp Style) */}
                 {message.replyTo && message.replyTo.id && (
                   <div className={cn(
