@@ -27,7 +27,7 @@ export default function LandingPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/20">
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight">TogetherMind</span>
+              <span className="text-xl font-bold tracking-tight">Connecto</span>
             </div>
             <div className="hidden items-center gap-8 md:flex">
               <a href="#features" className="text-sm font-medium text-zinc-400 transition-colors hover:text-white">Features</a>
@@ -216,7 +216,7 @@ export default function LandingPage() {
 
         {/* Footer */}
         <footer className="border-t border-white/5 py-12 text-center text-zinc-500">
-          <p>© 2026 TogetherMind. Built for recruiters and tech enthusiasts.</p>
+          <p>© 2026 Connecto. Built for recruiters and tech enthusiasts.</p>
         </footer>
       </div>
     </SmoothScroll>
